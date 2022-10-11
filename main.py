@@ -20,6 +20,12 @@ class Github:
     def close(self):
         return self.get_session().close()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
     def get_token(self):
         token = os.getenv("TOKEN", None)
         if token is not None:
@@ -45,8 +51,10 @@ class Github:
             "bio": bio
         }
         return self.get_session().patch(self.__HOST, headers=self.get_headers(), data=json.dumps(body)).json()
+
+
 if __name__ == '__main__':
-    github = Github()
-    timezone = pytz.timezone('Asia/Kathmandu')
-    dt = datetime.datetime.now(timezone)
-    github.update_bio(f"I only code at {dt.strftime('%-I %p')} "+"{GMT+5:45}" )
+    with Github() as github:
+        timezone = pytz.timezone('Asia/Kathmandu')
+        dt = datetime.datetime.now(timezone)
+        github.update_bio(f"I only code at {dt.strftime('%-I %p')} "+"{GMT+5:45}")
